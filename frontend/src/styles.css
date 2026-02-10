@@ -1,0 +1,217 @@
+﻿:root {
+  color-scheme: light;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  line-height: 1.4;
+  color: #121212;
+  background: #f4f2ee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: linear-gradient(120deg, #f0d9b5, #f8ede3);
+  border-bottom: 1px solid #e7d9c8;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+}
+
+.nav a {
+  color: #1a1a1a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-main {
+  flex: 1;
+  padding: 24px 32px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+}
+
+.form input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d0c9c1;
+}
+
+.button {
+  background: #121212;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.button-ghost {
+  background: transparent;
+  color: #121212;
+  border: 1px solid #121212;
+}
+
+.lesson-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-card {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #eadfd3;
+  border-radius: 12px;
+  background: #fffdf8;
+}
+
+.admin-section input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d0c9c1;
+}
+
+.reader-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+.page-list {
+  max-height: 70vh;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+}
+
+.page-list button {
+  text-align: left;
+  background: #f5efe7;
+  border: 1px solid #e2d3c4;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.page-list button.active {
+  background: #121212;
+  color: #fff;
+}
+
+.pdf-canvas {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.audio-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.progress-toggle {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.piano-wrap {
+  background: #101010;
+  padding: 20px;
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+.piano {
+  display: flex;
+  position: relative;
+  height: 200px;
+  min-width: 1400px;
+}
+
+.key {
+  position: relative;
+  border: 1px solid #333;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 10px;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+.key.white {
+  width: 28px;
+  height: 200px;
+  background: #fff;
+  z-index: 1;
+}
+
+.key.black {
+  width: 18px;
+  height: 120px;
+  background: #1b1b1b;
+  color: #fff;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  margin-left: -9px;
+}
+
+.key.active {
+  background: #ffcc80;
+  color: #111;
+}
+
+@media (max-width: 900px) {
+  .reader-layout {
+    grid-template-columns: 1fr;
+  }
+}
