@@ -1,10 +1,12 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiFetch, API_BASE } from "../api";
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import workerSrc from "pdfjs-dist/build/pdf.worker.mjs?url";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
+
+type ProgressStatus = "not_seen" | "in_practice" | "done";
 
 interface Lesson {
   id: number;
@@ -26,13 +28,20 @@ interface LessonPage {
   audio: PageAudio[];
 }
 
+interface LessonPageProgress {
+  page_number: number;
+  status: ProgressStatus;
+  updated_at?: string | null;
+}
+
 export default function LessonReaderPage() {
   const params = useParams();
   const lessonId = Number(params.id);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [page, setPage] = useState<LessonPage | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [status, setStatus] = useState("not_seen");
+  const [status, setStatus] = useState<ProgressStatus>("not_seen");
+  const [pageStatuses, setPageStatuses] = useState<Record<number, ProgressStatus>>({});
   const [error, setError] = useState<string | null>(null);
 
   const pageCount = lesson?.page_count || 0;
@@ -57,11 +66,20 @@ export default function LessonReaderPage() {
       .then((res) => res.json())
       .then(setPage)
       .catch((err) => setError(err.message));
+  }, [lessonId, pageNumber]);
 
-    apiFetch(`/lessons/${lessonId}/pages/${pageNumber}/progress`)
+  useEffect(() => {
+    apiFetch(`/lessons/${lessonId}/progress`)
       .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("not_seen"));
+      .then((rows: LessonPageProgress[]) => {
+        const next = rows.reduce<Record<number, ProgressStatus>>((acc, row) => {
+          acc[row.page_number] = row.status;
+          return acc;
+        }, {});
+        setPageStatuses(next);
+        setStatus(next[pageNumber] || "not_seen");
+      })
+      .catch((err) => setError(err.message));
   }, [lessonId, pageNumber]);
 
   useEffect(() => {
@@ -83,12 +101,31 @@ export default function LessonReaderPage() {
   }, [pdfUrl, pageNumber]);
 
   const cycleStatus = async () => {
-    const next = status === "not_seen" ? "in_practice" : status === "in_practice" ? "done" : "not_seen";
+    const next: ProgressStatus = status === "not_seen" ? "in_practice" : status === "in_practice" ? "done" : "not_seen";
     setStatus(next);
+    setPageStatuses((prev) => ({ ...prev, [pageNumber]: next }));
     await apiFetch(`/lessons/${lessonId}/pages/${pageNumber}/progress`, {
       method: "PUT",
       body: JSON.stringify({ status: next }),
     });
+  };
+
+  const trackAudioPlay = async (audioId: number) => {
+    try {
+      await apiFetch("/events/track", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "page_audio_played",
+          payload_json: {
+            lesson_id: lessonId,
+            page_number: pageNumber,
+            audio_id: audioId,
+          },
+        }),
+      });
+    } catch {
+      // Do not block playback UI if analytics fails.
+    }
   };
 
   return (
@@ -102,9 +139,15 @@ export default function LessonReaderPage() {
               <button
                 key={num}
                 className={num === pageNumber ? "active" : ""}
-                onClick={() => setPageNumber(num)}
+                onClick={() => {
+                  setPageNumber(num);
+                  setStatus(pageStatuses[num] || "not_seen");
+                }}
               >
-                Page {num}
+                <span>Page {num}</span>
+                <span className={`page-status page-status-${pageStatuses[num] || "not_seen"}`}>
+                  {pageStatuses[num] || "not_seen"}
+                </span>
               </button>
             ))}
           </div>
@@ -119,7 +162,11 @@ export default function LessonReaderPage() {
             {page?.audio?.map((audio) => (
               <div key={audio.id} className="card">
                 <div>{audio.title || "Voice box"}</div>
-                <audio controls src={`${API_BASE}/media/${audio.file_key}`} />
+                <audio
+                  controls
+                  src={`${API_BASE}/media/${audio.file_key}`}
+                  onPlay={() => trackAudioPlay(audio.id)}
+                />
               </div>
             ))}
           </div>

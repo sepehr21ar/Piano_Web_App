@@ -22,7 +22,12 @@ async def create_lesson(
     db: AsyncSession = Depends(get_db),
     admin=Depends(require_admin),
 ):
-    lesson = Lesson(title=payload.title, description=payload.description)
+    lesson = Lesson(
+        title=payload.title,
+        description=payload.description,
+        category=payload.category,
+        level=payload.level,
+    )
     db.add(lesson)
     await db.commit()
     await db.refresh(lesson)

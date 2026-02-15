@@ -1,10 +1,26 @@
 import { useState } from "react";
 import { apiFetch } from "../api";
 
+type LessonCategory = "lesson" | "track";
+type LessonLevel = "beginners" | "intermediate" | "professional";
+
+const CATEGORY_LABELS: Record<LessonCategory, string> = {
+  lesson: "Lesson",
+  track: "Track",
+};
+
+const LEVEL_LABELS: Record<LessonLevel, string> = {
+  beginners: "Beginners",
+  intermediate: "Intermediate",
+  professional: "Professional",
+};
+
 export default function AdminPage() {
   const [lessonId, setLessonId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<LessonCategory>("lesson");
+  const [level, setLevel] = useState<LessonLevel>("beginners");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioTitle, setAudioTitle] = useState("");
@@ -15,11 +31,15 @@ export default function AdminPage() {
     setMessage(null);
     const res = await apiFetch("/admin/lessons", {
       method: "POST",
-      body: JSON.stringify({ title, description }),
+      body: JSON.stringify({ title, description, category, level }),
     });
     const data = await res.json();
     setLessonId(data.id);
-    setMessage(`Lesson created: ${data.id}`);
+    setMessage(
+      `Lesson created: ${data.id} (${CATEGORY_LABELS[data.category as LessonCategory] || data.category}, ${
+        LEVEL_LABELS[data.level as LessonLevel] || data.level
+      })`,
+    );
   };
 
   const uploadPdf = async () => {
@@ -65,6 +85,21 @@ export default function AdminPage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+        <label>
+          Category
+          <select value={category} onChange={(e) => setCategory(e.target.value as LessonCategory)}>
+            <option value="lesson">Lesson</option>
+            <option value="track">Track</option>
+          </select>
+        </label>
+        <label>
+          Level
+          <select value={level} onChange={(e) => setLevel(e.target.value as LessonLevel)}>
+            <option value="beginners">Beginners</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="professional">Professional</option>
+          </select>
+        </label>
         <button className="button" onClick={createLesson}>
           Create Lesson
         </button>
