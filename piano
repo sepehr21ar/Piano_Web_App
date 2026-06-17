@@ -1,0 +1,661 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict KZ4WdXzXArLd0QyTVdQaYD8ZtQj5GDb2dOfqPqMlHJn731P8mOQqw3o0TkDI3Ko
+
+-- Dumped from database version 18.1
+-- Dumped by pg_dump version 18.1
+
+-- Started on 2026-06-17 19:26:13
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 219 (class 1259 OID 16967)
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.alembic_version OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 17032)
+-- Name: events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.events (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    type character varying(50) NOT NULL,
+    payload_json jsonb,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.events OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 17031)
+-- Name: events_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.events_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5043 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.events_id_seq OWNED BY public.events.id;
+
+
+--
+-- TOC entry 227 (class 1259 OID 17051)
+-- Name: lesson_pages; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lesson_pages (
+    id integer NOT NULL,
+    lesson_id integer NOT NULL,
+    page_number integer NOT NULL
+);
+
+
+ALTER TABLE public.lesson_pages OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 17050)
+-- Name: lesson_pages_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.lesson_pages_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.lesson_pages_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5044 (class 0 OID 0)
+-- Dependencies: 226
+-- Name: lesson_pages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.lesson_pages_id_seq OWNED BY public.lesson_pages.id;
+
+
+--
+-- TOC entry 221 (class 1259 OID 17003)
+-- Name: lessons; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lessons (
+    id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    description text,
+    pdf_file_key character varying(512),
+    page_count integer,
+    created_at timestamp without time zone NOT NULL,
+    category character varying(40) NOT NULL,
+    level character varying(20) NOT NULL,
+    CONSTRAINT ck_lessons_category CHECK (((category)::text = ANY ((ARRAY['lesson'::character varying, 'track'::character varying])::text[]))),
+    CONSTRAINT ck_lessons_level CHECK (((level)::text = ANY ((ARRAY['beginners'::character varying, 'intermediate'::character varying, 'professional'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.lessons OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 17002)
+-- Name: lessons_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.lessons_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.lessons_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5045 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: lessons_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.lessons_id_seq OWNED BY public.lessons.id;
+
+
+--
+-- TOC entry 229 (class 1259 OID 17067)
+-- Name: page_audio; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.page_audio (
+    id integer NOT NULL,
+    lesson_page_id integer NOT NULL,
+    file_key character varying(512) NOT NULL,
+    duration_ms integer,
+    title character varying(255)
+);
+
+
+ALTER TABLE public.page_audio OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 17066)
+-- Name: page_audio_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.page_audio_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.page_audio_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5046 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: page_audio_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.page_audio_id_seq OWNED BY public.page_audio.id;
+
+
+--
+-- TOC entry 231 (class 1259 OID 17085)
+-- Name: page_progress; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.page_progress (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    lesson_page_id integer NOT NULL,
+    status character varying(20) NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    CONSTRAINT ck_page_progress_status CHECK (((status)::text = ANY ((ARRAY['not_seen'::character varying, 'in_practice'::character varying, 'done'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.page_progress OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 17084)
+-- Name: page_progress_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.page_progress_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.page_progress_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5047 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: page_progress_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.page_progress_id_seq OWNED BY public.page_progress.id;
+
+
+--
+-- TOC entry 223 (class 1259 OID 17016)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    email character varying(255) NOT NULL,
+    password_hash character varying(255) NOT NULL,
+    role character varying(20) NOT NULL,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 17015)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 5048 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 4841 (class 2604 OID 17035)
+-- Name: events id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events ALTER COLUMN id SET DEFAULT nextval('public.events_id_seq'::regclass);
+
+
+--
+-- TOC entry 4842 (class 2604 OID 17054)
+-- Name: lesson_pages id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lesson_pages ALTER COLUMN id SET DEFAULT nextval('public.lesson_pages_id_seq'::regclass);
+
+
+--
+-- TOC entry 4839 (class 2604 OID 17006)
+-- Name: lessons id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lessons ALTER COLUMN id SET DEFAULT nextval('public.lessons_id_seq'::regclass);
+
+
+--
+-- TOC entry 4843 (class 2604 OID 17070)
+-- Name: page_audio id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_audio ALTER COLUMN id SET DEFAULT nextval('public.page_audio_id_seq'::regclass);
+
+
+--
+-- TOC entry 4844 (class 2604 OID 17088)
+-- Name: page_progress id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_progress ALTER COLUMN id SET DEFAULT nextval('public.page_progress_id_seq'::regclass);
+
+
+--
+-- TOC entry 4840 (class 2604 OID 17019)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 5025 (class 0 OID 16967)
+-- Dependencies: 219
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+7bc1df6b8ca2
+\.
+
+
+--
+-- TOC entry 5031 (class 0 OID 17032)
+-- Dependencies: 225
+-- Data for Name: events; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events (id, user_id, type, payload_json, created_at) FROM stdin;
+1	1	page_audio_played	{"audio_id": 1, "lesson_id": 1, "page_number": 1}	2026-02-15 19:30:08.575654
+2	1	page_progress_changed	{"lesson_id": 1, "to_status": "in_practice", "from_status": "not_seen", "page_number": 1}	2026-02-15 19:30:15.856122
+3	1	page_progress_changed	{"lesson_id": 1, "to_status": "done", "from_status": "in_practice", "page_number": 1}	2026-02-15 19:30:32.497864
+4	1	page_marked_done	{"lesson_id": 1, "page_number": 1}	2026-02-15 19:30:32.497864
+\.
+
+
+--
+-- TOC entry 5033 (class 0 OID 17051)
+-- Dependencies: 227
+-- Data for Name: lesson_pages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.lesson_pages (id, lesson_id, page_number) FROM stdin;
+1	1	1
+\.
+
+
+--
+-- TOC entry 5027 (class 0 OID 17003)
+-- Dependencies: 221
+-- Data for Name: lessons; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.lessons (id, title, description, pdf_file_key, page_count, created_at, category, level) FROM stdin;
+1	book	12srstrs	lessons/1/pdf/cf20e43089394f2aa70335b282afc1b0.pdf	1	2026-02-15 19:27:28.312674	lesson	intermediate
+\.
+
+
+--
+-- TOC entry 5035 (class 0 OID 17067)
+-- Dependencies: 229
+-- Data for Name: page_audio; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.page_audio (id, lesson_page_id, file_key, duration_ms, title) FROM stdin;
+1	1	lessons/1/audio/8b165aa0b5ac4f0dbaa7d2fbbc9acbfb.m4a	\N	\N
+\.
+
+
+--
+-- TOC entry 5037 (class 0 OID 17085)
+-- Dependencies: 231
+-- Data for Name: page_progress; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.page_progress (id, user_id, lesson_page_id, status, updated_at) FROM stdin;
+1	1	1	done	2026-02-15 19:30:32.495819
+\.
+
+
+--
+-- TOC entry 5029 (class 0 OID 17016)
+-- Dependencies: 223
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (id, email, password_hash, role, created_at) FROM stdin;
+1	sepehr.asgarian21@gmail.com	$argon2id$v=19$m=65536,t=3,p=4$D8EYg9Aag7A2ZszZW2tNqQ$H9lj6BdsGOYlubNrWnVNcNfVSm3w4bgQIsuERW/HyR0	admin	2026-02-15 12:30:28.108528
+\.
+
+
+--
+-- TOC entry 5049 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.events_id_seq', 4, true);
+
+
+--
+-- TOC entry 5050 (class 0 OID 0)
+-- Dependencies: 226
+-- Name: lesson_pages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.lesson_pages_id_seq', 1, true);
+
+
+--
+-- TOC entry 5051 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: lessons_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.lessons_id_seq', 1, true);
+
+
+--
+-- TOC entry 5052 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: page_audio_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.page_audio_id_seq', 1, true);
+
+
+--
+-- TOC entry 5053 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: page_progress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.page_progress_id_seq', 1, true);
+
+
+--
+-- TOC entry 5054 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 1, true);
+
+
+--
+-- TOC entry 4849 (class 2606 OID 16972)
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
+
+
+--
+-- TOC entry 4858 (class 2606 OID 17043)
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4862 (class 2606 OID 17059)
+-- Name: lesson_pages lesson_pages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lesson_pages
+    ADD CONSTRAINT lesson_pages_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4852 (class 2606 OID 17013)
+-- Name: lessons lessons_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lessons
+    ADD CONSTRAINT lessons_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4867 (class 2606 OID 17077)
+-- Name: page_audio page_audio_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_audio
+    ADD CONSTRAINT page_audio_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4870 (class 2606 OID 17095)
+-- Name: page_progress page_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_progress
+    ADD CONSTRAINT page_progress_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4864 (class 2606 OID 17110)
+-- Name: lesson_pages uix_lesson_page_number; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lesson_pages
+    ADD CONSTRAINT uix_lesson_page_number UNIQUE (lesson_id, page_number);
+
+
+--
+-- TOC entry 4872 (class 2606 OID 17097)
+-- Name: page_progress uix_user_page; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_progress
+    ADD CONSTRAINT uix_user_page UNIQUE (user_id, lesson_page_id);
+
+
+--
+-- TOC entry 4856 (class 2606 OID 17028)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4859 (class 1259 OID 17049)
+-- Name: ix_events_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_events_id ON public.events USING btree (id);
+
+
+--
+-- TOC entry 4860 (class 1259 OID 17065)
+-- Name: ix_lesson_pages_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_lesson_pages_id ON public.lesson_pages USING btree (id);
+
+
+--
+-- TOC entry 4850 (class 1259 OID 17014)
+-- Name: ix_lessons_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_lessons_id ON public.lessons USING btree (id);
+
+
+--
+-- TOC entry 4865 (class 1259 OID 17083)
+-- Name: ix_page_audio_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_page_audio_id ON public.page_audio USING btree (id);
+
+
+--
+-- TOC entry 4868 (class 1259 OID 17108)
+-- Name: ix_page_progress_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_page_progress_id ON public.page_progress USING btree (id);
+
+
+--
+-- TOC entry 4853 (class 1259 OID 17029)
+-- Name: ix_users_email; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
+
+
+--
+-- TOC entry 4854 (class 1259 OID 17030)
+-- Name: ix_users_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX ix_users_id ON public.users USING btree (id);
+
+
+--
+-- TOC entry 4873 (class 2606 OID 17044)
+-- Name: events events_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.events
+    ADD CONSTRAINT events_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4874 (class 2606 OID 17060)
+-- Name: lesson_pages lesson_pages_lesson_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lesson_pages
+    ADD CONSTRAINT lesson_pages_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES public.lessons(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4875 (class 2606 OID 17078)
+-- Name: page_audio page_audio_lesson_page_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_audio
+    ADD CONSTRAINT page_audio_lesson_page_id_fkey FOREIGN KEY (lesson_page_id) REFERENCES public.lesson_pages(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4876 (class 2606 OID 17098)
+-- Name: page_progress page_progress_lesson_page_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_progress
+    ADD CONSTRAINT page_progress_lesson_page_id_fkey FOREIGN KEY (lesson_page_id) REFERENCES public.lesson_pages(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4877 (class 2606 OID 17103)
+-- Name: page_progress page_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.page_progress
+    ADD CONSTRAINT page_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+-- Completed on 2026-06-17 19:26:14
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict KZ4WdXzXArLd0QyTVdQaYD8ZtQj5GDb2dOfqPqMlHJn731P8mOQqw3o0TkDI3Ko
+

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/piano_app"
     secret_key: str = "CHANGE_ME"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 30   
     refresh_token_expire_days: int = 7
     storage_path: str = "./storage"
     allowed_origins: str = "http://localhost:5173"
