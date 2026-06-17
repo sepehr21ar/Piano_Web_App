@@ -1,5 +1,15 @@
+# VS Code
 .vscode/
+
+# Environment
 .env
 
+# Python cache
 __pycache__/
 *.py[cod]
+
+# Node
+node_modules/
+.vite/
+
+backend\app\core\__pycache__
